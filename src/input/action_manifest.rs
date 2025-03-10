@@ -4,7 +4,7 @@ use super::{
     profiles::{PathTranslation, Profiles},
     ActionData, ActionKey, BoundPoseType, Input,
 };
-use crate::input::action_manifest_helpers::{
+use crate::input::action_manifest::helpers::{
     BindingsLoadContext, BindingsProfileLoadContext, DpadActivatorData, DpadHapticData,
 };
 use crate::{
@@ -24,6 +24,8 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::RwLock;
 use std::{cell::LazyCell, env::current_dir};
+
+mod helpers;
 
 fn action_map_to_secondary<T>(
     act_guard: &mut SlotMap<ActionKey, super::Action>,
@@ -228,7 +230,7 @@ struct ActionManifest {
 }
 
 #[derive(Deserialize)]
-pub(super) struct DefaultBindings {
+struct DefaultBindings {
     binding_url: PathBuf,
     controller_type: ControllerType,
 }
@@ -336,7 +338,7 @@ fn load_action_sets(
     Ok(action_sets)
 }
 
-pub(super) type LoadedActionDataMap = HashMap<String, super::ActionData>;
+type LoadedActionDataMap = HashMap<String, super::ActionData>;
 
 fn load_actions(
     instance: &xr::Instance,
@@ -478,7 +480,7 @@ struct ActionSetBinding {
 
 #[repr(transparent)]
 #[derive(Hash, Eq, PartialEq)]
-pub(super) struct LowercaseActionPath(String);
+struct LowercaseActionPath(String);
 impl std::fmt::Debug for LowercaseActionPath {
     #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -628,7 +630,7 @@ enum ActionBinding {
 }
 
 #[repr(transparent)]
-pub(super) struct FromString<T>(pub T);
+struct FromString<T>(pub T);
 
 impl<T: FromStr> FromStr for FromString<T> {
     type Err = T::Err;
@@ -660,11 +662,11 @@ struct ButtonInput {
 }
 
 #[derive(Deserialize)]
-pub(super) struct ClickThresholdParams {
+struct ClickThresholdParams {
     #[allow(unused)]
-    pub click_activate_threshold: Option<FromString<f32>>,
+    click_activate_threshold: Option<FromString<f32>>,
     #[allow(unused)]
-    pub click_deactivate_threshold: Option<FromString<f32>>,
+    click_deactivate_threshold: Option<FromString<f32>>,
 }
 
 #[derive(Deserialize)]
@@ -675,12 +677,12 @@ struct ScalarConstantParameters {
 }
 
 #[derive(Deserialize)]
-pub(super) struct ButtonParameters {
+struct ButtonParameters {
     #[allow(unused)]
     force_input: Option<String>,
     #[allow(unused)]
     #[serde(flatten)]
-    pub click_threshold: ClickThresholdParams,
+    click_threshold: ClickThresholdParams,
 }
 
 #[derive(Deserialize, Debug)]
@@ -694,11 +696,11 @@ struct DpadInput {
 
 #[derive(Deserialize)]
 #[serde(default)]
-pub struct DpadParameters {
-    pub sub_mode: DpadSubMode,
-    pub deadzone_pct: FromString<u8>,
-    pub overlap_pct: FromString<u8>,
-    pub sticky: FromString<bool>,
+struct DpadParameters {
+    sub_mode: DpadSubMode,
+    deadzone_pct: FromString<u8>,
+    overlap_pct: FromString<u8>,
+    sticky: FromString<bool>,
 }
 
 impl Default for DpadParameters {
@@ -714,7 +716,7 @@ impl Default for DpadParameters {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub(super) enum DpadSubMode {
+enum DpadSubMode {
     Click,
     Touch,
 }
@@ -748,11 +750,11 @@ struct GrabInput {
 }
 
 #[derive(Deserialize)]
-pub struct GrabParameters {
+struct GrabParameters {
     #[allow(unused)]
-    pub value_hold_threshold: Option<FromString<f32>>,
+    value_hold_threshold: Option<FromString<f32>>,
     #[allow(unused)]
-    pub value_release_threshold: Option<FromString<f32>>,
+    value_release_threshold: Option<FromString<f32>>,
 }
 
 #[derive(Deserialize)]
@@ -1296,7 +1298,7 @@ fn handle_sources(
                 }
 
                 let (force_full_name, value_full_name) =
-                    context.get_or_create_grip_action_pair(output, action_set_name, action_set);
+                    context.get_or_create_grab_action_pair(output, action_set_name, action_set);
 
                 context.add_custom_grab_binding(output, &translated_force, parameters);
 
